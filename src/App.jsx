@@ -11,13 +11,13 @@ function App() {
   const [count, setCount] = useState(0)
 
   return (
-      <Router>
-        <Routes>
-          <Route index element = {<Main />} />
-          <Route path = "success" element = {<Success />} />
-          <Route path = "cancel" element = {<Cancel />} />
-        </Routes>
-      </Router>
+    <Router basename={process.env.PUBLIC_URL}>
+      <Routes>
+        <Route index element={<Main />} />
+        <Route path="success" element={<Success />} />
+        <Route path="cancel" element={<Cancel />} />
+      </Routes>
+    </Router>
   );
 }
 
