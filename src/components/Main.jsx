@@ -3,7 +3,7 @@ import React, { useState, useEffect, useMemo } from "react";
 import Papa from "papaparse";
 import getStripe from "../../lib/getStripe";
 import { loadStripe } from "@stripe/stripe-js";
-import axios from "axios";
+import axios from "redaxios";
 import TextField from "@mui/material/TextField";
 import Autocomplete from "@mui/material/Autocomplete";
 import Checkout from "./Checkout";

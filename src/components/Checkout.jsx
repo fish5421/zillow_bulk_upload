@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { loadStripe } from "@stripe/stripe-js";
-import axios from "axios";
+import axios from "redaxios";
 
 
 import CardIcon from "../assets/react.svg";
@@ -48,9 +48,6 @@ const Checkout = ({ onClick }) => {
         .catch((error) => {
           console.error(error);
         });
-
-
-
 
 
       // console.log("handleClick1", fileIsSent);
