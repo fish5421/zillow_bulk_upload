@@ -8,7 +8,7 @@ import CardIcon from "../assets/react.svg";
 
 // import "../styles.css";
 
-const Checkout = ({ onClick }) => {
+const Checkout = ({ isPurchaseDisabled, onClick }) => {
   const [stripeError, setStripeError] = useState(null);
   const [isLoading, setLoading] = useState(false);
   const [isFileLoading, setFileLoading] = useState(false);
@@ -19,8 +19,10 @@ const Checkout = ({ onClick }) => {
     try {
       setFileLoading(true);
       const result = await onClick();
+      console.log("setLoader", result);
       if (result === false) {
         setFileLoading(false);
+        return;
       }
       setFileLoading(false);
       setLoading(true);
@@ -31,8 +33,6 @@ const Checkout = ({ onClick }) => {
       let userId = result[2];
 
       console.log('testing_12',userId)
-
-
 
       await axios
         .get("https://7nhxfo2q0b.execute-api.us-east-1.amazonaws.com/default/myAWSLambdaStripe", {
@@ -86,7 +86,14 @@ const Checkout = ({ onClick }) => {
             ></path>
           </svg>
         </span>
-        <span className="relative" onClick={handleClick}>
+        {/* <span className="relative" onClick={handleClick}>
+          {isLoading ? "Loading..." : "Purchase"}
+        </span> */}
+        <span
+          className={`relative ${isPurchaseDisabled ? "cursor-not-allowed opacity-50" : ""
+            }`}
+          onClick={!isPurchaseDisabled ? handleClick : null}
+        >
           {isLoading ? "Loading..." : "Purchase"}
         </span>
         {isFileLoading && (

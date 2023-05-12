@@ -18,6 +18,8 @@ const App = () => {
   const [errorMessage, setErrorMessage] = useState("");
   const [pricingResult, setPricingResult] = useState(0);
   const [handleFileHeader, setHandleFileHeader] = useState([]);
+  const [isPurchaseDisabled, setIsPurchaseDisabled] = useState(false);
+
   var userId = 0;
 
   const [address, setAddress] = useState({
@@ -210,6 +212,15 @@ const App = () => {
           console.log(results.data);
           setData(results.data);
           setCount(results.data.length - 1);
+          if (results.data.length > 1000) {
+            setIsPurchaseDisabled(true);
+            setErrorMessage(
+              "File contains more than 1000 rows. Please break up the file and re-upload it."
+            );
+          } else {
+            setIsPurchaseDisabled(false);
+            setErrorMessage("");
+          }
           // console.log("count", count);
           setHandleFileHeader(results.data[0]);
           // console.log("handleFileHeader", handleFileHeader);
@@ -395,7 +406,7 @@ const App = () => {
                   <div className="error">{errorMessage}</div>
                 ) : null}
 
-                <Checkout onClick={handleS3Upload} />
+                <Checkout onClick={handleS3Upload} isPurchaseDisabled={isPurchaseDisabled} />
               </div>
               <br />
             </div>
