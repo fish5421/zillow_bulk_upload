@@ -6,6 +6,9 @@ import Main from './components/Main'
 import Checkout from "./components/Checkout";
 import Success from "./components/Success";
 import Cancel from "./components/Cancel";
+import { inject } from '@vercel/analytics';
+
+inject();
 
 function App() {
   const [count, setCount] = useState(0)
