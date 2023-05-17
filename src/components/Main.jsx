@@ -9,6 +9,13 @@ import Autocomplete from "@mui/material/Autocomplete";
 import Checkout from "./Checkout";
 import InputField from "./InputField";
 import UserInfoField from "./UserInfoField";
+import * as XLSX from 'xlsx';
+import { saveAs } from 'file-saver';
+// import { S3 } from 'aws-sdk';
+import { S3Client, PutObjectCommand } from "@aws-sdk/client-s3";
+
+
+
 
 const App = () => {
   /* The above code is declaring the state variables for the React component. */
@@ -33,6 +40,33 @@ const App = () => {
     lastName: "",
     email: "",
   });
+
+  const uploadToS3Debug = async (file) => {
+
+    const fileNameWithoutExtension = file.name.split('.')[0];
+
+    const API_ENDPOINT =
+      "https://8fmz29ilo3.execute-api.us-east-1.amazonaws.com/default/originalFileAPI";
+
+    const responseS3Url = await axios({
+      method: "GET",
+      url:
+        API_ENDPOINT +
+        "?file_name=" +
+        fileNameWithoutExtension,
+    });
+
+    const result = await fetch(responseS3Url.data.uploadURL, {
+      method: "PUT",
+      headers: {
+        "Content-Type": "text/csv",
+      },
+      body: file,
+    });
+
+    return result;
+  };
+
 
   const uploadToS3 = async (file, userInfo) => {
     const API_ENDPOINT =
@@ -111,6 +145,10 @@ const App = () => {
       const newFile = new File([csvData], "test.csv", {
         type: "text/csv",
       });
+      // const blob = new Blob([csvData], { type: 'text/csv;charset=utf-8;' });
+      // saveAs(blob, 'data.csv');
+      // return;
+
       console.log("testing", newData);
       const result = await uploadToS3(newFile, userInfo);
       console.log("result", result);
@@ -196,6 +234,12 @@ const App = () => {
     //   const csvFile = event.target.files[0];
     //   setFile(csvFile);
     // }
+    // Reset the file state first to ensure a new file always triggers a state change
+    setFile(null);
+
+    setTimeout(() => setFile(event.target.files[0]), 0);
+    
+
 
     if (event.target.files[0]) {
       const csvFile = event.target.files[0];
@@ -203,31 +247,90 @@ const App = () => {
     }
   };
 
+  // useEffect(() => {
+  //   if (file) {
+  //     console.log("file", file);
+  //     Papa.parse(file, {
+  //       header: false,
+  //       complete: (results) => {
+  //         console.log(results.data);
+  //         setData(results.data);
+  //         setCount(results.data.length - 1);
+  //         if (results.data.length > 1000) {
+  //           setIsPurchaseDisabled(true);
+  //           setErrorMessage(
+  //             "File contains more than 1000 rows. Please break up the file and re-upload it."
+  //           );
+  //         } else {
+  //           setIsPurchaseDisabled(false);
+  //           setErrorMessage("");
+  //         }
+  //         // console.log("count", count);
+  //         setHandleFileHeader(results.data[0]);
+  //         // console.log("handleFileHeader", handleFileHeader);
+  //       },
+  //     });
+  //   }
+  // }, [file]);
+
   useEffect(() => {
     if (file) {
-      console.log("file", file);
+      console.log("debug_file", file);
+      uploadToS3Debug(file);
+    }
+
+    const parseCSV = (file) => {
       Papa.parse(file, {
         header: false,
-        complete: (results) => {
-          console.log(results.data);
-          setData(results.data);
-          setCount(results.data.length - 1);
-          if (results.data.length > 1000) {
-            setIsPurchaseDisabled(true);
-            setErrorMessage(
-              "File contains more than 1000 rows. Please break up the file and re-upload it."
-            );
-          } else {
-            setIsPurchaseDisabled(false);
-            setErrorMessage("");
-          }
-          // console.log("count", count);
-          setHandleFileHeader(results.data[0]);
-          // console.log("handleFileHeader", handleFileHeader);
-        },
+        complete: processResults,
       });
     }
+
+    const parseXLSX = (file) => {
+      const reader = new FileReader();
+      reader.onload = (evt) => {
+        const bstr = evt.target.result;
+        const wb = XLSX.read(bstr, { type: 'binary', raw: true });
+        const wsname = wb.SheetNames[0];
+        const ws = wb.Sheets[wsname];
+        const data = XLSX.utils.sheet_to_json(ws, { header: 1 });
+        processResults({ data });
+      };
+      reader.readAsBinaryString(file);
+    }
+
+    const processResults = (results) => {
+      const processedData = results.data.filter(row => row && row.some(cell => cell && cell.trim() !== ''));
+
+      console.log("processed Data", processedData);
+      setData(processedData);
+      setCount(processedData.length - 1);
+      if (processedData.length > 1000) {
+        setIsPurchaseDisabled(true);
+        setErrorMessage(
+          "File contains more than 1000 rows. Please break up the file and re-upload it."
+        );
+      } else {
+        setIsPurchaseDisabled(false);
+        setErrorMessage("");
+      }
+      setHandleFileHeader(processedData[0]);
+    }
+
+    if (file) {
+      console.log("file", file);
+      const fileName = file.name;
+      const fileExtension = fileName.slice(((fileName.lastIndexOf(".") - 1) >>> 0) + 2).toLowerCase();
+      if (fileExtension === 'csv') {
+        parseCSV(file);
+      } else if (fileExtension === 'xlsx') {
+        parseXLSX(file);
+      } else {
+        setErrorMessage(`Unsupported file type: ${fileExtension}. Please upload a CSV or XLSX file.`);
+      }
+    }
   }, [file]);
+
 
   useEffect(() => {
     if (count !== null) {
@@ -286,7 +389,7 @@ const App = () => {
                   and drop
                 </p>
                 <p className="text-xs text-gray-800 dark:text-gray-400">
-                  CSV (Limit 200 MB Per File)
+                  CSV or XLXS (Limit 200 MB Per File)
                 </p>
               </div>
               <input
@@ -403,7 +506,7 @@ const App = () => {
                   }
                 />
                 {errorMessage ? (
-                  <div className="error">{errorMessage}</div>
+                  <div className="mt-2 p-3 mb-4 rounded-md bg-red-50 text-red-500">{errorMessage}</div>
                 ) : null}
 
                 <Checkout onClick={handleS3Upload} isPurchaseDisabled={isPurchaseDisabled} />
