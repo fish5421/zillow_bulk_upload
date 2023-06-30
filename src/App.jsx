@@ -7,6 +7,8 @@ import Checkout from "./components/Checkout";
 import Success from "./components/Success";
 import Cancel from "./components/Cancel";
 import { inject } from '@vercel/analytics';
+import Landing from "./components/Landing";
+
 
 inject();
 
