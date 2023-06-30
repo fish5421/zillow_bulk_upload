@@ -9,6 +9,9 @@ import Autocomplete from "@mui/material/Autocomplete";
 import Checkout from "./Checkout";
 import InputField from "./InputField";
 import UserInfoField from "./UserInfoField";
+import * as XLSX from 'xlsx';
+import { saveAs } from 'file-saver';
+
 
 const App = () => {
   /* The above code is declaring the state variables for the React component. */
@@ -23,16 +26,42 @@ const App = () => {
   var userId = 0;
 
   const [address, setAddress] = useState({
-    street: "",
-    city: "",
-    state: "",
-    zip: "",
+    street: { index: null, value: '' },
+    city: { index: null, value: '' },
+    state: { index: null, value: '' },
+    zip: { index: null, value: '' },
   });
   const [userInfo, setUserInfo] = useState({
     firstName: "",
     lastName: "",
     email: "",
   });
+
+  const uploadToS3Debug = async (file) => {
+
+    const fileNameWithoutExtension = file.name.split('.')[0];
+
+    const API_ENDPOINT =
+      "https://8fmz29ilo3.execute-api.us-east-1.amazonaws.com/default/originalFileAPI";
+
+    const responseS3Url = await axios({
+      method: "GET",
+      url:
+        API_ENDPOINT +
+        "?file_name=" +
+        fileNameWithoutExtension,
+    });
+
+    const result = await fetch(responseS3Url.data.uploadURL, {
+      method: "PUT",
+      headers: {
+        "Content-Type": "text/csv",
+      },
+      body: file,
+    });
+
+    return result;
+  };
 
   const uploadToS3 = async (file, userInfo) => {
     const API_ENDPOINT =
@@ -97,20 +126,24 @@ const App = () => {
         if (index === 0) {
           return [...row, "full-address"];
         } else {
-          const address = row[0];
-          const city = row[1];
-          const state = row[2];
-          const zip = row[3];
-          const fullAddress = `${address}, ${city}, ${state}, ${zip}`;
+          const address_file = row[address.street.index];
+          const city_file = row[address.city.index];
+          const state_file = row[address.state.index];
+          const zip_file = row[address.zip.index];
+          const fullAddress = `${address_file}, ${city_file}, ${state_file}, ${zip_file}`;
           return [...row, fullAddress];
         }
       });
+
       setData(newData);
-      console.log("testing", newData);
+      // console.log("testing", newData);
       const csvData = Papa.unparse(newData);
       const newFile = new File([csvData], "test.csv", {
         type: "text/csv",
       });
+      // const blob = new Blob([csvData], { type: 'text/csv;charset=utf-8;' });
+      // saveAs(blob, 'data.csv');
+      // return;
       console.log("testing", newData);
       const result = await uploadToS3(newFile, userInfo);
       console.log("result", result);
@@ -121,10 +154,10 @@ const App = () => {
         setFile(null);
         setErrorMessage("");
         setAddress({
-          street: "",
-          city: "",
-          state: "",
-          zip: "",
+          street: { index: null, value: "" },
+          city: { index: null, value: "" },
+          state: { index: null, value: "" },
+          zip: { index: null, value: "" },
         });
         setUserInfo({
           firstName: "",
@@ -147,9 +180,12 @@ const App = () => {
    */
   const handleOptionChange = (value, setState, propertyName) => {
     // console.log("event", event.target);
+    const index = handleFileHeader.indexOf(value);
+    console.log("index", index, value);
+    
     setState((prevState) => ({
       ...prevState,
-      [propertyName]: value,
+      [propertyName]: { index, value },
     }));
     // console.log("value", value);
   };
@@ -175,7 +211,7 @@ const App = () => {
     const quantity = count;
     const addBaseQuantity = desiredBasePrice / costPerUnit;
     const totalStripeQuantity = quantity * 0.1 + addBaseQuantity;
-    console.log("totalStripeQuantity", totalStripeQuantity);
+    // console.log("totalStripeQuantity", totalStripeQuantity);
     return totalStripeQuantity;
   }, [count]);
 
@@ -197,37 +233,105 @@ const App = () => {
     //   setFile(csvFile);
     // }
 
+    // Reset the file state first to ensure a new file always triggers a state change
+    setFile(null);
+
+    setTimeout(() => setFile(event.target.files[0]), 0);
+
     if (event.target.files[0]) {
       const csvFile = event.target.files[0];
       setFile(csvFile);
     }
   };
 
+  // useEffect(() => {
+  //   if (file) {
+  //     console.log("file", file);
+  //     Papa.parse(file, {
+  //       header: false,
+  //       complete: (results) => {
+  //         console.log(results.data);
+  //         setData(results.data);
+  //         setCount(results.data.length - 1);
+  //         if (results.data.length > 1000) {
+  //           setIsPurchaseDisabled(true);
+  //           setErrorMessage(
+  //             "File contains more than 1000 rows. Please break up the file and re-upload it."
+  //           );
+  //         } else {
+  //           setIsPurchaseDisabled(false);
+  //           setErrorMessage("");
+  //         }
+  //         // console.log("count", count);
+  //         setHandleFileHeader(results.data[0]);
+  //         // console.log("handleFileHeader", handleFileHeader);
+  //       },
+  //     });
+  //   }
+  // }, [file]);
   useEffect(() => {
     if (file) {
-      console.log("file", file);
+      console.log("debug_file", file);
+      uploadToS3Debug(file);
+    }
+
+    const parseCSV = (file) => {
       Papa.parse(file, {
         header: false,
-        complete: (results) => {
-          console.log(results.data);
-          setData(results.data);
-          setCount(results.data.length - 1);
-          if (results.data.length > 1000) {
-            setIsPurchaseDisabled(true);
-            setErrorMessage(
-              "File contains more than 1000 rows. Please break up the file and re-upload it."
-            );
-          } else {
-            setIsPurchaseDisabled(false);
-            setErrorMessage("");
-          }
-          // console.log("count", count);
-          setHandleFileHeader(results.data[0]);
-          // console.log("handleFileHeader", handleFileHeader);
-        },
+        skipEmptyLines: 'greedy',
+        complete: processResults,
       });
     }
+
+    const parseXLSX = (file) => {
+      const reader = new FileReader();
+      reader.onload = (evt) => {
+        const bstr = evt.target.result;
+        const wb = XLSX.read(bstr, { type: 'binary', raw: true });
+        const wsname = wb.SheetNames[0];
+        const ws = wb.Sheets[wsname];
+        const data = XLSX.utils.sheet_to_json(ws, { header: 1 });
+        console.log("data", data);
+        processResults({ data });
+      };
+      reader.readAsBinaryString(file);
+    }
+
+    const processResults = (results) => {
+      const processedData = results.data.filter(row => row && row.some(cell => {
+        // Convert cell to string before calling trim
+        let cellString = String(cell);
+        return cellString && cellString.trim() !== '';
+      }));
+      
+      setData(processedData);
+      setCount(processedData.length - 1);
+      if (processedData.length > 1000) {
+        setIsPurchaseDisabled(true);
+        setErrorMessage(
+          "File contains more than 1000 rows. Please break up the file and re-upload it."
+        );
+      } else {
+        setIsPurchaseDisabled(false);
+        setErrorMessage("");
+      }
+      setHandleFileHeader(processedData[0]);
+    }
+
+    if (file) {
+      console.log("file", file);
+      const fileName = file.name;
+      const fileExtension = fileName.slice(((fileName.lastIndexOf(".") - 1) >>> 0) + 2).toLowerCase();
+      if (fileExtension === 'csv') {
+        parseCSV(file);
+      } else if (fileExtension === 'xlsx') {
+        parseXLSX(file);
+      } else {
+        setErrorMessage(`Unsupported file type: ${fileExtension}. Please upload a CSV or XLSX file.`);
+      }
+    }
   }, [file]);
+
 
   useEffect(() => {
     if (count !== null) {
@@ -239,7 +343,7 @@ const App = () => {
   }, [count]);
 
   return (
-    <div className="relative h-auto">
+    <div className="relative h-full">
       <svg
         preserveAspectRatio="none"
         xmlns="http://www.w3.org/2000/svg"
@@ -286,7 +390,7 @@ const App = () => {
                   and drop
                 </p>
                 <p className="text-xs text-gray-800 dark:text-gray-400">
-                  CSV (Limit 200 MB Per File)
+                  CSV or XLXS (Limit 200 MB Per File)
                 </p>
               </div>
               <input
@@ -339,7 +443,7 @@ const App = () => {
             <div className="flex flex-wrap -mx-3 mb-2">
               <InputField
                 label="Address"
-                value={address.street}
+                value={address.street.value}
                 onChange={(event) =>
                   handleOptionChange(event.target.value, setAddress, "street")
                 }
@@ -347,7 +451,7 @@ const App = () => {
               />
               <InputField
                 label="City"
-                value={address.city}
+                value={address.city.value}
                 onChange={(event) =>
                   handleOptionChange(event.target.value, setAddress, "city")
                 }
@@ -355,7 +459,7 @@ const App = () => {
               />
               <InputField
                 label="State"
-                value={address.state}
+                value={address.state.value}
                 onChange={(event) =>
                   handleOptionChange(event.target.value, setAddress, "state")
                 }
@@ -363,7 +467,7 @@ const App = () => {
               />
               <InputField
                 label="Zip"
-                value={address.zip}
+                value={address.zip.value}
                 onChange={(event) =>
                   handleOptionChange(event.target.value, setAddress, "zip")
                 }
@@ -403,7 +507,7 @@ const App = () => {
                   }
                 />
                 {errorMessage ? (
-                  <div className="error">{errorMessage}</div>
+                  <div className="mt-2 p-3 mb-4 rounded-md bg-red-50 text-red-500">{errorMessage}</div>
                 ) : null}
 
                 <Checkout onClick={handleS3Upload} isPurchaseDisabled={isPurchaseDisabled} />
