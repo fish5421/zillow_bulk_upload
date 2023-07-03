@@ -4,7 +4,7 @@ const InputField = ({ label, value, onChange, options }) => {
   return (
     <div className="w-full md:w-1/4 px-3 mb-6 md:mb-0">
       <label
-        className="block uppercase tracking-wide text-gray-700 text-xs font-bold mb-2"
+        className="block uppercase tracking-wide text-gray-100 text-xs font-bold mb-2"
         htmlFor={label}
       >
         {label}

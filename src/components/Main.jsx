@@ -11,6 +11,8 @@ import InputField from "./InputField";
 import UserInfoField from "./UserInfoField";
 import * as XLSX from 'xlsx';
 import { saveAs } from 'file-saver';
+import Sidebar from './Sidebar';
+
 
 
 const App = () => {
@@ -22,6 +24,9 @@ const App = () => {
   const [pricingResult, setPricingResult] = useState(0);
   const [handleFileHeader, setHandleFileHeader] = useState([]);
   const [isPurchaseDisabled, setIsPurchaseDisabled] = useState(false);
+
+
+
 
   var userId = 0;
 
@@ -36,6 +41,10 @@ const App = () => {
     lastName: "",
     email: "",
   });
+
+  const toggleSidebar = () => {
+    setIsOpen(!isOpen);
+  };
 
   const uploadToS3Debug = async (file) => {
 
@@ -182,7 +191,7 @@ const App = () => {
     // console.log("event", event.target);
     const index = handleFileHeader.indexOf(value);
     console.log("index", index, value);
-    
+
     setState((prevState) => ({
       ...prevState,
       [propertyName]: { index, value },
@@ -234,11 +243,11 @@ const App = () => {
     // }
 
     // Reset the file state first to ensure a new file always triggers a state change
-    setFile(null);
 
-    setTimeout(() => setFile(event.target.files[0]), 0);
-
-    if (event.target.files[0]) {
+    // No file was selected
+    if (!event.target.files || event.target.files.length === 0) {
+      setFile(null);
+    } else {
       const csvFile = event.target.files[0];
       setFile(csvFile);
     }
@@ -269,6 +278,22 @@ const App = () => {
   //     });
   //   }
   // }, [file]);
+
+  useEffect(() => {
+    // Check if file is null
+    if (!file) {
+      // Reset address
+      setHandleFileHeader([]);
+      // setAddress({
+      //   street: { index: null, value: null },
+      //   city: { index: null, value: null },
+      //   state: { index: null, value: null },
+      //   zip: { index: null, value: null },
+      // });
+    }
+  }, [file]);
+
+
   useEffect(() => {
     if (file) {
       console.log("debug_file", file);
@@ -303,7 +328,7 @@ const App = () => {
         let cellString = String(cell);
         return cellString && cellString.trim() !== '';
       }));
-      
+
       setData(processedData);
       setCount(processedData.length - 1);
       if (processedData.length > 1000) {
@@ -342,179 +367,212 @@ const App = () => {
     }
   }, [count]);
 
+
+  const displaySelectedData = () => {
+
+    // Return early if no file is selected
+    if (!file) {
+      return;
+    }
+    // Assuming fileData is available here.
+    // Check if fileData exists and if the required address fields have been selected.
+    if (data && address.street.value && address.city.value && address.state.value && address.zip.value) {
+      // Get the indices of the selected columns
+      const indices = {
+        street: data[0].indexOf(address.street.value),
+        city: data[0].indexOf(address.city.value),
+        state: data[0].indexOf(address.state.value),
+        zip: data[0].indexOf(address.zip.value)
+      }
+
+      // Show the first 5 rows, adjust as necessary.
+      return data.slice(1, 6).map((row, index) => (
+        <p className="text-gray-100 text-left" key={index}>
+          {`${row[indices.street]}, ${row[indices.city]}, ${row[indices.state]}, ${row[indices.zip]}`}
+        </p>
+      ));
+    }
+  };
+
   return (
-    <div className="relative h-full">
-      <svg
-        preserveAspectRatio="none"
-        xmlns="http://www.w3.org/2000/svg"
-        viewBox="0 0 1440 169"
-        className="absolute top-10 left-0 h-full w-full z-0"
-      >
-        <path
-          d="M0,160L60,154.7C120,149,240,139,360,122.7C480,107,600,85,720,90.7C840,96,960,128,1080,122.7C1200,117,1320,75,1380,53.3L1440,32L1440,320L1380,320C1320,320,1200,320,1080,320C960,320,840,320,720,320C600,320,480,320,360,320C240,320,120,320,60,320L0,320Z"
-          fill="#667eea"
-        ></path>
-      </svg>
+    <div className="relative min-h-screen bg-black-50">
 
+      <div>
+        <Sidebar />
+      </div>
       <div className="relative flex flex-col items-center justify-center h-auto z-10">
-        <h2 className="text-3xl font-bold leading-tight text-center">
-          Property Details Bulk Upload Tool
-        </h2>
-        <h3 className="text-left mb-6 text-xs font-mono font-thin">
-          Get property details for a list of addresses
-        </h3>
-        <div className="flex items-center justify-center w-full">
-          <form>
-            <label
-              htmlFor="dropzone-file"
-              className="flex flex-col items-center justify-center w-full h-64 border-2 border-gray-300 border-dashed rounded-lg cursor-pointer bg-gray-50 dark:hover:bg-bray-800 dark:bg-gray-700 hover:bg-gray-100 dark:border-gray-600 dark:hover:border-gray-500 dark:hover:bg-gray-600"
-            >
-              <div className="flex flex-col items-center justify-center pt-5 pb-6">
-                <svg
-                  aria-hidden="true"
-                  className="w-10 h-10 mb-3 text-gray-400"
-                  fill="none"
-                  stroke="currentColor"
-                  viewBox="0 0 24 24"
-                  xmlns="http://www.w3.org/2000/svg"
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth="2"
-                    d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"
-                  ></path>
-                </svg>
-                <p className="mb-2 text-sm text-gray-800 dark:text-gray-400">
-                  <span className="font-semibold">Click to upload</span> or drag
-                  and drop
-                </p>
-                <p className="text-xs text-gray-800 dark:text-gray-400">
-                  CSV or XLXS (Limit 200 MB Per File)
-                </p>
-              </div>
-              <input
-                className="ml-4"
-                id="dropzone-file"
-                type="file"
-                onChange={handleFile}
-              />
-            </label>
-          </form>
-        </div>
-        <br />
-        {file ? (
-          <div className="relative overflow-x-auto px-36 mb-8">
-            <table className="w-full text-base text-left text-gray-500 dark:text-gray-400 ">
-              <thead className="text-xs text-gray-700 uppercase bg-gray-100 dark:bg-gray-700 dark:text-gray-400">
-                <tr>
-                  <th scope="col" className="px-6 py-3 rounded-l-lg">
-                    Service
-                  </th>
-                  <th scope="col" className="px-6 py-3">
-                    Rows
-                  </th>
-                  <th scope="col" className="px-6 py-3 rounded-r-lg">
-                    Price
-                  </th>
-                </tr>
-              </thead>
-              <tbody>
-                <tr className="bg-white dark:bg-gray-800">
-                  <th
-                    scope="row"
-                    className="px-6 py-4 font-semibold text-gray-900 whitespace-nowrap dark:text-white"
+        <div className="relative flex flex-col items-center justify-center h-auto z-10 mx-20 p-16 bg-gray-50 rounded-lg drop-shadow-lg mt-10">
+          <h2 className="text-3xl text-white font-bold font-roboto leading-tight text-center">
+            Property Details Bulk Upload Tool
+          </h2>
+          <h3 className="text-left mb-6 text-md font-roboto text-white font-thin">
+            Get property details for a list of addresses
+          </h3>
+          <div className="flex items-center justify-center w-full">
+            <form>
+              <label
+                htmlFor="dropzone-file"
+                className="flex flex-col items-center justify-center w-full h-64 border-2 border-gray-300 border-dashed rounded-lg cursor-pointer bg-gray-200 dark:hover:bg-bray-800 dark:bg-gray-700 hover:bg-gray-600 dark:border-gray-600 dark:hover:border-gray-500 dark:hover:bg-gray-600 hover:text-black"
+              >
+                <div className="flex flex-col items-center justify-center pt-5 pb-6 hover:text-black">
+                  <svg
+                    aria-hidden="true"
+                    className="w-10 h-10 mb-3 text-gray-800 stroke-current hover:text-black-50"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                    xmlns="http://www.w3.org/2000/svg"
                   >
-                    Zillow Property Details
-                  </th>
-                  <td className="px-6 py-4">{count}</td>
-                  <td className="px-6 py-4">
-                    {formatter.format(Math.floor(pricingResult) * 0.5)}
-                  </td>
-                </tr>
-              </tbody>
-            </table>
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth="2"
+                      d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"
+                    ></path>
+                  </svg>
+
+                  <p className="mb-2 text-sm text-gray-800 dark:text-gray-400 hover:text-black">
+                    <span className="font-semibold hover:text-black">Click to upload</span> or drag
+                    and drop
+                  </p>
+                  <p className="text-xs text-gray-800 dark:text-gray-400 hover:text-black">
+                    CSV or XLXS (Limit 200 MB Per File)
+                  </p>
+                </div>
+                <input
+                  className="ml-4"
+                  id="dropzone-file"
+                  type="file"
+                  onChange={handleFile}
+                />
+              </label>
+            </form>
+
           </div>
-        ) : null}
-
-        <div className="flex flex-col items-center justify-center ">
-          <form className="w-full max-w-lg">
-            <div className="flex flex-wrap -mx-3 mb-6"></div>
-            <div className="flex flex-wrap -mx-3 mb-2">
-              <InputField
-                label="Address"
-                value={address.street.value}
-                onChange={(event) =>
-                  handleOptionChange(event.target.value, setAddress, "street")
-                }
-                options={handleFileHeader}
-              />
-              <InputField
-                label="City"
-                value={address.city.value}
-                onChange={(event) =>
-                  handleOptionChange(event.target.value, setAddress, "city")
-                }
-                options={handleFileHeader}
-              />
-              <InputField
-                label="State"
-                value={address.state.value}
-                onChange={(event) =>
-                  handleOptionChange(event.target.value, setAddress, "state")
-                }
-                options={handleFileHeader}
-              />
-              <InputField
-                label="Zip"
-                value={address.zip.value}
-                onChange={(event) =>
-                  handleOptionChange(event.target.value, setAddress, "zip")
-                }
-                options={handleFileHeader}
-              />
-              <div className="w-full md:w-1/4 px-3 mb-6 md:mb-0"></div>
-              <div className="flex flex-col ml-3 w-full">
-                <hr className="h-px my-8 bg-gray-200 border-0 dark:bg-gray-700" />
-                <UserInfoField
-                  label="First Name"
-                  value={userInfo.firstName}
-                  onChange={(e) =>
-                    setUserInfo({
-                      ...userInfo,
-                      firstName: e.target.value,
-                    })
-                  }
-                />
-                <UserInfoField
-                  label="Last Name"
-                  value={userInfo.lastName}
-                  onChange={(e) =>
-                    setUserInfo({
-                      ...userInfo,
-                      lastName: e.target.value,
-                    })
-                  }
-                />
-                <UserInfoField
-                  label="Email"
-                  value={userInfo.email}
-                  onChange={(e) =>
-                    setUserInfo({
-                      ...userInfo,
-                      email: e.target.value,
-                    })
-                  }
-                />
-                {errorMessage ? (
-                  <div className="mt-2 p-3 mb-4 rounded-md bg-red-50 text-red-500">{errorMessage}</div>
-                ) : null}
-
-                <Checkout onClick={handleS3Upload} isPurchaseDisabled={isPurchaseDisabled} />
-              </div>
-              <br />
+          <br />
+          {file ? (
+            <div className="relative overflow-x-auto px-36 mb-8">
+              <table className="text-base text-left text-gray-500 dark:text-gray-400">
+                <thead className="text-xs text-gray-700 uppercase bg-gray-100 dark:bg-gray-700 dark:text-gray-400">
+                  <tr>
+                    <th scope="col" className="px-6 py-3 rounded-l-lg">
+                      Service
+                    </th>
+                    <th scope="col" className="px-6 py-3">
+                      Rows
+                    </th>
+                    <th scope="col" className="px-6 py-3 rounded-r-lg">
+                      Price
+                    </th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr className="bg-gray-50 dark:bg-gray-800">
+                    <th
+                      scope="row"
+                      className="px-6 py-4 font-semibold text-gray-100 whitespace-nowrap dark:text-white"
+                    >
+                      Zillow Property Details
+                    </th>
+                    <td className="px-6 py-4 text-gray-100">{count}</td>
+                    <td className="px-6 py-4 text-gray-100">
+                      {formatter.format(Math.floor(pricingResult) * 0.5)}
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
             </div>
-          </form>
+          ) : null}
+
+          <div className="flex flex-col items-center justify-center ">
+            <form className="w-full max-w-lg">
+              <div className="flex flex-wrap -mx-3 mb-6"></div>
+              <div className="flex flex-wrap -mx-3 mb-2">
+                <InputField
+                  label="Address"
+                  value={address.street.value}
+                  onChange={(event) =>
+                    handleOptionChange(event.target.value, setAddress, "street")
+                  }
+                  options={handleFileHeader}
+                />
+                <InputField
+                  label="City"
+                  value={address.city.value}
+                  onChange={(event) =>
+                    handleOptionChange(event.target.value, setAddress, "city")
+                  }
+                  options={handleFileHeader}
+                />
+                <InputField
+                  label="State"
+                  value={address.state.value}
+                  onChange={(event) =>
+                    handleOptionChange(event.target.value, setAddress, "state")
+                  }
+                  options={handleFileHeader}
+                />
+                <InputField
+                  label="Zip"
+                  value={address.zip.value}
+                  onChange={(event) =>
+                    handleOptionChange(event.target.value, setAddress, "zip")
+                  }
+                  options={handleFileHeader}
+                />
+                {file && data && address.street.value && address.city.value && address.state.value && address.zip.value ? (
+                  <div className="mt-8 ">
+                    <label className="purple-underline-1 block uppercase tracking-wide text-gray-100 text-left text-lg font-bold mb-2">
+                      Sample Selected Addresses:
+                    </label>
+                  </div>) : (null)}
+                <div>
+                  {displaySelectedData()}
+                </div>
+
+                <div className="w-full md:w-1/4 px-3 mb-6 md:mb-0"></div>
+                <div className="flex flex-col w-full">
+                  <hr className="h-px my-8 bg-gray-200 border-0 dark:bg-gray-700" />
+                  <UserInfoField
+                    label="First Name"
+                    value={userInfo.firstName}
+                    onChange={(e) =>
+                      setUserInfo({
+                        ...userInfo,
+                        firstName: e.target.value,
+                      })
+                    }
+                  />
+                  <UserInfoField
+                    label="Last Name"
+                    value={userInfo.lastName}
+                    onChange={(e) =>
+                      setUserInfo({
+                        ...userInfo,
+                        lastName: e.target.value,
+                      })
+                    }
+                  />
+                  <UserInfoField
+                    label="Email"
+                    value={userInfo.email}
+                    onChange={(e) =>
+                      setUserInfo({
+                        ...userInfo,
+                        email: e.target.value,
+                      })
+                    }
+                  />
+                  {errorMessage ? (
+                    <div className="mt-2 p-3 mb-4 rounded-md bg-red-50 text-red-500">{errorMessage}</div>
+                  ) : null}
+
+                  <Checkout onClick={handleS3Upload} isPurchaseDisabled={isPurchaseDisabled} />
+                </div>
+                <br />
+              </div>
+            </form>
+          </div>
         </div>
       </div>
     </div>
