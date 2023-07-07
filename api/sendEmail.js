@@ -1,6 +1,9 @@
 const sgMail = require("@sendgrid/mail");
 sgMail.setApiKey(process.env.SENDGRID_API_KEY);
 
+res.status(200).json({ status: "Ok" });
+
+
 export default async (req, res) => {
   const { name, email, message } = req.body;
 

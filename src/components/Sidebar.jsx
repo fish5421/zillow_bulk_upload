@@ -33,7 +33,7 @@ const Sidebar = ({ isOpen, onClose }) => {
             <aside id="logo-sidebar" class="fixed top-0 left-0 z-40 w-64 h-screen transition-transform -translate-x-full sm:translate-x-0" aria-label="Sidebar">
                 <div class="h-full px-3 py-4 overflow-y-auto bg-gray-50">
                     <a href="/" class="flex items-center pl-2.5 mb-5">
-                        <img src="src/assets/Screenshot_Ariel.png" class="h-8 mr-3 sm:h-9" alt="Flowbite Logo" />
+                        <img src="https://bulk-upload-assets.s3.amazonaws.com/Screenshot_2023-07-02.png" class="h-8 mr-3 sm:h-9" alt="Flowbite Logo" />
                         <span class="text-gray-100 self-center text-xl font-semibold whitespace-nowrap dark:text-white">Ariel Analytics</span>
                     </a>
                     <ul class="space-y-2 font-medium">

@@ -400,7 +400,7 @@ const App = () => {
       <div>
         <Sidebar />
       </div>
-      <div className="relative flex flex-col items-center justify-center h-auto z-10">
+      <div className="xl:w-3/4 lg:pl-64 lg:w-3/4 md:pl-64 md:w-1/2 sm:w-1/2 relative flex flex-col items-center justify-center h-auto z-10 mx-auto max-w-7xl"> 
         <div className="relative flex flex-col items-center justify-center h-auto z-10 mx-20 p-16 bg-gray-50 rounded-lg drop-shadow-lg mt-10">
           <h2 className="text-3xl text-white font-bold font-roboto leading-tight text-center">
             Property Details Bulk Upload Tool
@@ -451,7 +451,7 @@ const App = () => {
           </div>
           <br />
           {file ? (
-            <div className="relative overflow-x-auto px-36 mb-8">
+            <div className="relative overflow-x-auto md:px-8 px-32 mb-8">
               <table className="text-base text-left text-gray-500 dark:text-gray-400">
                 <thead className="text-xs text-gray-700 uppercase bg-gray-100 dark:bg-gray-700 dark:text-gray-400">
                   <tr>
@@ -484,7 +484,7 @@ const App = () => {
             </div>
           ) : null}
 
-          <div className="flex flex-col items-center justify-center ">
+          <div className="flex flex-col items-center justify-center">
             <form className="w-full max-w-lg">
               <div className="flex flex-wrap -mx-3 mb-6"></div>
               <div className="flex flex-wrap -mx-3 mb-2">

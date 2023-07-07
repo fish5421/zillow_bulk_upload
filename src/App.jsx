@@ -9,6 +9,7 @@ import Cancel from "./components/Cancel";
 import { inject } from '@vercel/analytics';
 import Landing from "./components/Landing";
 import Contact from "./components/Contact";
+import About from './components/About'
 
 
 inject();
@@ -23,6 +24,7 @@ function App() {
         <Route path="success" element={<Success />} />
         <Route path="cancel" element={<Cancel />} />
         <Route path="contact" element={<Contact />} /> {/* Add this line */}
+        <Route path="about" element={<About />} /> {/* Add this line */}
 
       </Routes>
     </Router>
