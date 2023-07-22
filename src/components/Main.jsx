@@ -26,7 +26,7 @@ const App = () => {
   const [isPurchaseDisabled, setIsPurchaseDisabled] = useState(false);
 
 
-
+  const MAX_RETRIES = 3; // Maximum number of times to retry the operation
 
   var userId = 0;
 
@@ -45,6 +45,14 @@ const App = () => {
   const toggleSidebar = () => {
     setIsOpen(!isOpen);
   };
+
+  function extractPattern(url) {
+    console.log("url", url);
+    // The pattern seems to be a date, time, name, 'request', and version in .csv format
+    var pattern = /\d{4}-\d{2}-\d{2}_\d{6}_\w+_request_\d+(\.\d+)?\.csv/g;
+    var match = url.match(pattern);
+    return match ? match[0] : null;
+  }
 
   const uploadToS3Debug = async (file) => {
 
@@ -73,11 +81,21 @@ const App = () => {
   };
 
   const uploadToS3 = async (file, userInfo) => {
-    const API_ENDPOINT =
-      "https://2m276uf7d7.execute-api.us-east-1.amazonaws.com/default/getSignedURL";
+    //Production
+    // const API_ENDPOINT =
+    //   "https://2m276uf7d7.execute-api.us-east-1.amazonaws.com/default/getSignedURL";
 
-    const API_ENDPOINT_USER_CHECK =
-      "https://42dxnsentf.execute-api.us-east-1.amazonaws.com/default/userCheck";
+    //Development
+    const API_ENDPOINT =
+    "https://2s40wkddl4.execute-api.us-east-1.amazonaws.com/default/getPresignedCSVURLTest";
+
+    //Production
+      // const API_ENDPOINT_USER_CHECK =
+      // "https://42dxnsentf.execute-api.us-east-1.amazonaws.com/default/userCheck";
+
+    //Development
+    const API_ENDPOINT_USER_CHECK = 
+    "https://xujcmgyej1.execute-api.us-east-1.amazonaws.com/default/test";
 
     const responseCheckUser = await axios({
       method: "GET",
@@ -116,7 +134,7 @@ const App = () => {
     return result;
   };
 
-  const handleS3Upload = async () => {
+  const handleS3Upload = async (retryCount = 0) => {
     if (
       !address.street ||
       !address.city ||
@@ -155,7 +173,23 @@ const App = () => {
       // return;
       console.log("testing", newData);
       const result = await uploadToS3(newFile, userInfo);
+      //wait for 5 seconds
+      console.log("result", result.url);
       console.log("result", result);
+
+      if (extractPattern(result.url) === null) {
+        // Auto retry if not beyond maximum retries
+        if (retryCount < MAX_RETRIES) {
+          console.log(`Pattern extraction failed! Auto retrying... (${retryCount + 1})`);
+          // Use setTimeout for delays between attempts (here 1 second delay)
+          setTimeout(() => handleS3Upload(retryCount + 1), 1000);
+          return;
+        } else {
+          console.log("Pattern extraction failed after maximum retries!");
+          return false;
+        }
+      }
+
 
       if (result.status === 200) {
         // alert("File uploaded successfully");
@@ -173,7 +207,7 @@ const App = () => {
           lastName: "",
           email: "",
         });
-        return [true, pricingResult, userId];
+        return [true, pricingResult, userId, extractPattern(result.url), userInfo.email];
       }
     } else {
       setErrorMessage("An error occurred. Please try again later.");
@@ -400,7 +434,7 @@ const App = () => {
       <div>
         <Sidebar />
       </div>
-      <div className="xl:w-3/4 lg:pl-64 lg:w-3/4 md:pl-64 md:w-1/2 sm:w-1/2 relative flex flex-col items-center justify-center h-auto z-10 mx-auto max-w-7xl"> 
+      <div className="xl:w-3/4 lg:pl-64 lg:w-3/4 md:pl-64 md:w-1/2 sm:w-1/2 relative flex flex-col items-center justify-center h-auto z-10 mx-auto max-w-7xl">
         <div className="relative flex flex-col items-center justify-center h-auto z-10 mx-20 p-16 bg-gray-50 rounded-lg drop-shadow-lg mt-10">
           <h2 className="text-3xl text-white font-bold font-roboto leading-tight text-center">
             Property Details Bulk Upload Tool

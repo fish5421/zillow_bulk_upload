@@ -31,14 +31,24 @@ const Checkout = ({ isPurchaseDisabled, onClick }) => {
       // setStripeQuantity(Math.ceil(result[1]) - 1)
       let stripeQuantity = Math.ceil(result[1]) - 1;
       let userId = result[2];
+      let filename = result[3];
+      let email = result[4];
 
       console.log('testing_12',userId)
+      //production
+      // const stripe_api = "https://7nhxfo2q0b.execute-api.us-east-1.amazonaws.com/default/myAWSLambdaStripe"
+
+      //dev
+      const stripe_api = "https://s9qlazley1.execute-api.us-east-1.amazonaws.com/default/myAWStripeLamndaTest"
+
 
       await axios
-        .get("https://7nhxfo2q0b.execute-api.us-east-1.amazonaws.com/default/myAWSLambdaStripe", {
+        .get(stripe_api, {
           params: {
             user_id: userId,
             quantity: stripeQuantity,
+            filename: filename,
+            email: email
           },
         })
         .then((response) => {

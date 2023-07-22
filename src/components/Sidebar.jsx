@@ -21,7 +21,7 @@ const Sidebar = ({ isOpen, onClose }) => {
                 data-drawer-toggle="logo-sidebar"
                 aria-controls="logo-sidebar"
                 type="button"
-                class="inline-flex items-center p-2 mt-2 ml-3 text-sm text-gray-500 rounded-lg sm:hidden hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-gray-200 dark:text-gray-400 dark:hover:bg-gray-700 dark:focus:ring-gray-600"
+                class="inline-flex p-2 mt-2 ml-3 text-sm lg:hidden text-gray-500 rounded-lg  hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-gray-200 dark:text-gray-400 dark:hover:bg-gray-700 dark:focus:ring-gray-600"
             // onClick ={() => setIsSidebarVisible(!isSidebarVisible)}
             >
                 <span class="sr-only">Open sidebar</span>
@@ -75,9 +75,20 @@ const Sidebar = ({ isOpen, onClose }) => {
                                 <span class="ml-3 whitespace-nowrap">About</span>
                                 {/* <span class="inline-flex items-center justify-center px-2 ml-3 text-sm font-medium text-gray-800 bg-gray-200 rounded-full dark:bg-gray-700 dark:text-gray-300">Pro</span> */}
                             </a>
-
-                            
                         </li>
+                        {/* <li>
+                            <a
+                                onClick={() => navigate('/pricing')}
+                                class={`flex items-center p-2 rounded-lg dark:hover:bg-gray-700 ${isCurrentRoute('/pricing') ? 'text-gray-900 bg-gray-100 dark:text-white' : 'hover:text-gray-600 text-gray-100 hover:bg-gray-100 dark:text-gray-100'}`}>
+                                <svg width="26" height="26" fill="none" stroke="currentColor" stroke-linejoin="round" stroke-width="1.5" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                                    <path d="M19.5 6.75h-15A2.25 2.25 0 0 0 2.25 9v9a2.25 2.25 0 0 0 2.25 2.25h15A2.25 2.25 0 0 0 21.75 18V9a2.25 2.25 0 0 0-2.25-2.25Z"></path>
+                                    <path d="M19.282 6.75V5.342A2.344 2.344 0 0 0 16.5 3.041L4.155 5.148A2.344 2.344 0 0 0 2.25 7.452V9.75"></path>
+                                    <path fill="currentColor" stroke="none" d="M17.25 15a1.5 1.5 0 1 1 0-3 1.5 1.5 0 0 1 0 3Z"></path>
+                                </svg>
+                                <span class="ml-3">Pricing</span>
+                            </a>
+                        </li> */}
+
                     </ul>
                 </div>
             </aside>

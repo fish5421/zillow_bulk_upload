@@ -10,6 +10,10 @@ import { inject } from '@vercel/analytics';
 import Landing from "./components/Landing";
 import Contact from "./components/Contact";
 import About from './components/About'
+import SignIn from './components/SignInPage'
+import PricingPage from './components/PricingPage'
+import ForgotPasswordPage from './components/ForgotPasswordPage'
+import SignUp from './components/SignUpPage'
 
 
 inject();
@@ -25,6 +29,10 @@ function App() {
         <Route path="cancel" element={<Cancel />} />
         <Route path="contact" element={<Contact />} /> {/* Add this line */}
         <Route path="about" element={<About />} /> {/* Add this line */}
+        <Route path="signin" element={<SignIn />} /> {/* Add this line */}
+        {/* <Route path="pricing" element={<PricingPage />} /> */}
+        <Route path="forgotpassword" element={<ForgotPasswordPage />} /> {/* Add this line */}
+        <Route path="signup" element={<SignUp />} /> {/* Add this line */}
 
       </Routes>
     </Router>
