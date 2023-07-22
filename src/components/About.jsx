@@ -23,10 +23,10 @@ const About = () => {
                         We believe in transparency, accuracy, and usability in real estate data. We strive to provide the most accurate and up-to-date data in a user-friendly format. Join us in revolutionizing the real estate industry.
                     </p>
                     <p className="text-center text-white mb-5">
-                        For more in-depth discussions and insights on real estate technology, check out our
+                        For more in-depth discussions and insights on real estate technology, check out our&nbsp;
                         <a href="https://www.youtube.com/@TechInRealEstate" target="_blank" rel="noopener noreferrer" className="underline text-indigo-500 hover:text-indigo-600">YouTube channel, Tech in Real Estate</a>.
-                        We also invite you to visit our
-                        <a href="https://www.analyticsariel.com/" target="_blank" rel="noopener noreferrer" className="underline text-indigo-500 hover:text-indigo-600">website</a>
+                        We also invite you to visit our &nbsp;
+                        <a href="https://www.analyticsariel.com/" target="_blank" rel="noopener noreferrer" className="underline text-indigo-500 hover:text-indigo-600">website</a>&nbsp;
                         for more information and resources.
                     </p>
 
