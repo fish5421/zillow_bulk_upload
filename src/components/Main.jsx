@@ -222,15 +222,16 @@ const App = () => {
    * to the console.
    */
   const handleOptionChange = (value, setState, propertyName) => {
-    // console.log("event", event.target);
-    const index = handleFileHeader.indexOf(value);
-    console.log("index", index, value);
+    // Convert value to string
+    let strValue = String(value);
+
+    const index = handleFileHeader.indexOf(strValue);
+    console.log("index", index, strValue);
 
     setState((prevState) => ({
       ...prevState,
-      [propertyName]: { index, value },
+      [propertyName]: { index, strValue },
     }));
-    // console.log("value", value);
   };
 
   // Create our number formatter.
@@ -365,10 +366,10 @@ const App = () => {
 
       setData(processedData);
       setCount(processedData.length - 1);
-      if (processedData.length > 1000) {
+      if (processedData.length > 10000) {
         setIsPurchaseDisabled(true);
         setErrorMessage(
-          "File contains more than 1000 rows. Please break up the file and re-upload it."
+          "File contains more than 10000 rows. Please break up the file and re-upload it."
         );
       } else {
         setIsPurchaseDisabled(false);
