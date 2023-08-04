@@ -82,20 +82,20 @@ const App = () => {
 
   const uploadToS3 = async (file, userInfo) => {
     //Production
-    // const API_ENDPOINT =
-    //   "https://2m276uf7d7.execute-api.us-east-1.amazonaws.com/default/getSignedURL";
+    const API_ENDPOINT =
+      "https://2m276uf7d7.execute-api.us-east-1.amazonaws.com/default/getSignedURL";
 
     //Development
-    const API_ENDPOINT =
-    "https://2s40wkddl4.execute-api.us-east-1.amazonaws.com/default/getPresignedCSVURLTest";
+    // const API_ENDPOINT =
+    // "https://2s40wkddl4.execute-api.us-east-1.amazonaws.com/default/getPresignedCSVURLTest";
 
     //Production
-      // const API_ENDPOINT_USER_CHECK =
-      // "https://42dxnsentf.execute-api.us-east-1.amazonaws.com/default/userCheck";
+      const API_ENDPOINT_USER_CHECK =
+      "https://42dxnsentf.execute-api.us-east-1.amazonaws.com/default/userCheck";
 
     //Development
-    const API_ENDPOINT_USER_CHECK = 
-    "https://xujcmgyej1.execute-api.us-east-1.amazonaws.com/default/test";
+    // const API_ENDPOINT_USER_CHECK = 
+    // "https://xujcmgyej1.execute-api.us-east-1.amazonaws.com/default/test";
 
     const responseCheckUser = await axios({
       method: "GET",
@@ -221,17 +221,29 @@ const App = () => {
    * value. It then sets the state of setState2 to the value of value. It then logs the value of value
    * to the console.
    */
-  const handleOptionChange = (value, setState, propertyName) => {
-    // Convert value to string
-    let strValue = String(value);
+  // const handleOptionChange = (value, setState, propertyName) => {
+  //   // Convert value to string
+  //   let strValue = String(value);
 
-    const index = handleFileHeader.indexOf(strValue);
-    console.log("index", index, strValue);
+  //   const index = handleFileHeader.indexOf(strValue);
+  //   console.log("index", index, strValue);
+
+  //   setState((prevState) => ({
+  //     ...prevState,
+  //     [propertyName]: { index, strValue },
+  //   }));
+  // };
+
+  const handleOptionChange = (value, setState, propertyName) => {
+    // console.log("event", event.target);
+    const index = handleFileHeader.indexOf(value);
+    console.log("index", index, value);
 
     setState((prevState) => ({
       ...prevState,
-      [propertyName]: { index, strValue },
+      [propertyName]: { index, value },
     }));
+    // console.log("value", value);
   };
 
   // Create our number formatter.
@@ -375,7 +387,7 @@ const App = () => {
         setIsPurchaseDisabled(false);
         setErrorMessage("");
       }
-      setHandleFileHeader(processedData[0]);
+      setHandleFileHeader(processedData[0].map(String));
     }
 
     if (file) {
@@ -520,6 +532,9 @@ const App = () => {
           ) : null}
 
           <div className="flex flex-col items-center justify-center">
+            <p className="w-full max-w-lg bg-red-100 text-red-700  rounded-md">
+              Note: Including headers in your file ensures accurate data processing.
+            </p>
             <form className="w-full max-w-lg">
               <div className="flex flex-wrap -mx-3 mb-6"></div>
               <div className="flex flex-wrap -mx-3 mb-2">

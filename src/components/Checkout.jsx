@@ -36,10 +36,10 @@ const Checkout = ({ isPurchaseDisabled, onClick }) => {
 
       console.log('testing_12',userId)
       //production
-      // const stripe_api = "https://7nhxfo2q0b.execute-api.us-east-1.amazonaws.com/default/myAWSLambdaStripe"
+      const stripe_api = "https://7nhxfo2q0b.execute-api.us-east-1.amazonaws.com/default/myAWSLambdaStripe"
 
       //dev
-      const stripe_api = "https://s9qlazley1.execute-api.us-east-1.amazonaws.com/default/myAWStripeLamndaTest"
+      // const stripe_api = "https://s9qlazley1.execute-api.us-east-1.amazonaws.com/default/myAWStripeLamndaTest"
 
 
       await axios
