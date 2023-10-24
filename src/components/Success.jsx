@@ -1,7 +1,14 @@
-import React from "react";
+import React, { useEffect } from 'react';
 import { Link } from "react-router-dom";
 
 function TransactionSuccessPage() {
+
+  useEffect(() => {
+    // Add this line to track the 'Purchase' event on page load
+    qp('track', 'Purchase');
+  }, []);
+
+  
   return (
     <div className="bg-gray-100 flex items-center justify-center h-screen">
       <div className="bg-white p-8 rounded shadow-lg">
