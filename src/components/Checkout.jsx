@@ -41,9 +41,9 @@ const Checkout = ({ isPurchaseDisabled, onClick }) => {
       //dev
       // const stripe_api = "https://s9qlazley1.execute-api.us-east-1.amazonaws.com/default/myAWStripeLamndaTest"
 
-      window.gtag('config', 'AW-877929943');
+      // window.gtag('config', 'AW-877929943');
 
-      window.gtag('event', 'conversion', { 'send_to': 'AW-877929943/THVdCOya5fAYENfL0KID', 'value': stripeQuantity, 'currency': 'USD' });
+      // window.gtag('event', 'conversion', { 'send_to': 'AW-877929943/THVdCOya5fAYENfL0KID', 'value': stripeQuantity, 'currency': 'USD' });
 
 
 
